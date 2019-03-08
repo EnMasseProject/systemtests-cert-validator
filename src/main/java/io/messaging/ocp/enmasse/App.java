@@ -29,7 +29,7 @@ public class App {
     private File caCert;
     
     public App() {
-    	this.caCert = new File("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt");
+    	this.caCert = new File("/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt");
     	try {
 			logger.info("ca cert "+new String(Files.readAllBytes(caCert.toPath())));
 		} catch (IOException e) {
@@ -45,7 +45,7 @@ public class App {
         });
         int port = 8080;
         httpServer.listen(port);
-        logger.info("OCP enmasse app v1 listening on port: {}", port);
+        logger.info("OCP enmasse app listening on port: {}", port);
     }
     
     private void getHandler(HttpServerRequest request) {
@@ -55,8 +55,9 @@ public class App {
 
             Future<Void> messagingResult = new MessagingConnect().testConnection(vertx, json, caCert);
             Future<Void> mqttResult = new MqttConnect().testConnection(vertx, json, caCert);
+            Future<Void> consoleResult = new ConsoleConnect().testConnection(vertx, json, caCert);
             
-            CompositeFuture allResults = CompositeFuture.all(messagingResult, mqttResult);
+            CompositeFuture allResults = CompositeFuture.all(messagingResult, mqttResult, consoleResult);
             
             allResults.setHandler(ar->{
 				JsonObject responseData = new JsonObject();

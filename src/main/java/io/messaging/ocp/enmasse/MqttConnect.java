@@ -9,9 +9,10 @@ import java.net.Socket;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -73,14 +74,20 @@ public class MqttConnect {
     private SSLSocketFactory getSocketFactory(InputStream caCrtFile) throws Exception {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
-        X509Certificate caCert = (X509Certificate) cf.generateCertificate(caCrtFile);
-
         KeyStore caKs = KeyStore.getInstance(KeyStore.getDefaultType());
         caKs.load(null, null);
-        caKs.setCertificateEntry("ca-certificate", caCert);
+        
+        Collection<? extends Certificate> certs = cf.generateCertificates(caCrtFile);
+        
+        int count = 1;
+        for(Certificate cert : certs) {
+        	caKs.setCertificateEntry("cert"+count, cert);
+        	count++;
+        }
+        
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
         tmf.init(caKs);
-
+        
         SSLContext context = tryGetSSLContext("TLSv1.2", "TLSv1.1", "TLS", "TLSv1");
         context.init(null, tmf.getTrustManagers(), new SecureRandom());
 
@@ -168,5 +175,4 @@ public class MqttConnect {
         }
     }
 
-    
 }
