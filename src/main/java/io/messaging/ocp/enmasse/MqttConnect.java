@@ -30,6 +30,8 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -37,31 +39,39 @@ import io.vertx.core.json.JsonObject;
 
 public class MqttConnect {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	public Future<Void> testConnection(Vertx vertx, JsonObject opts, File caCert) {
 
 		Future<Void> resultPromise = Future.future();
-		
+		logger.info("mqtt creating");
 		MqttConnectOptions mqttOptions = new MqttConnectOptions();
 		try {
 			mqttOptions.setSocketFactory(new SNISettingSSLSocketFactory(getSocketFactory(new FileInputStream(caCert)), opts.getString("mqttHost")));
 		} catch (Exception e) {
+			logger.error("mqtt failed creating socket factory", e);
 			resultPromise.fail(e);
 		}
 		mqttOptions.setUserName(opts.getString("username"));
 		mqttOptions.setPassword(opts.getString("password").toCharArray());
-
+		mqttOptions.setConnectionTimeout(15);
+		
         String serverURI = String.format("ssl://%s:%s", opts.getString("mqttHost"), opts.getString("mqttPort"));
 		
 		vertx.executeBlocking(f->{
 			try {
+				logger.info("mqtt connecting");
 				IMqttClient mqttClient = new MqttClient(serverURI, UUID.randomUUID().toString(), new MemoryPersistence());
 				mqttClient.connect(mqttOptions);
+				logger.info("mqtt succeeded");
 				f.complete();
 			} catch (MqttException e) {
+				logger.error("mqtt failed connecting", e);
 				f.fail(e);
 			}
 		}, ar->{
 			if(ar.succeeded()) {
+				logger.info("mqtt returning success");
 				resultPromise.complete();
 			}else {
 				resultPromise.fail(ar.cause());

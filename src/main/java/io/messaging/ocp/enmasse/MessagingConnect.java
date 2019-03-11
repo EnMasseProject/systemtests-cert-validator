@@ -28,6 +28,7 @@ public class MessagingConnect {
 	                .addCertPath(caCert.getAbsolutePath()))
 	        .setTrustAll(false);
 		
+		logger.info("messaging connecting");
 		ProtonClient proton = ProtonClient.create(vertx);
 		proton.connect(options, opts.getString("messagingHost"), opts.getInteger("messagingPort"), opts.getString("username"), opts.getString("password"), connection -> {
             if (connection.succeeded()) {
@@ -38,6 +39,7 @@ public class MessagingConnect {
                         resultPromise.fail(result.cause());
                         logger.info("messaging failed opening");
                     } else {
+                    	logger.info("messaging succeeded");
                     	resultPromise.complete();
                     }
                 });
@@ -47,9 +49,11 @@ public class MessagingConnect {
                         resultPromise.fail(result.cause());
                         logger.info("messaging failed closing");
                     } else {
+                    	logger.info("messaging succeeded");
                     	resultPromise.complete();
                     }
                 });
+                logger.info("messaging openning");
                 conn.open();
             } else {
             	logger.info("messaging failed connecting");

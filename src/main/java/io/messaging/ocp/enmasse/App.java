@@ -68,6 +68,7 @@ public class App {
 					responseData.put("error", ar.cause().getMessage());
 					logger.error("error processing ", ar.cause());
 				}
+            	logger.info("Responding "+responseData.toString());
 				HttpServerResponse response = request.response();
 				response.setStatusCode(HttpURLConnection.HTTP_OK);
 				response.headers().add("Content-Type", "application/json");
