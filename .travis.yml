@@ -1,0 +1,14 @@
+language:
+- java
+
+sudo: required
+services:
+- docker
+
+jdk:
+- oraclejdk8
+
+install: true
+
+script:
+- "make"
