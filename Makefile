@@ -1,7 +1,7 @@
 VERSION     ?= 1.0-SNAPSHOT
-DOCKER_ORG	?= docker.io/famargon
+DOCKER_ORG	?= quay.io/enmasse
 TAG ?= latest
-PROJECT_NAME ?= openshift-cert-validator
+PROJECT_NAME ?= systemtests-cert-validator
 
 all: clean_java package_java docker_build docker_tag docker_push
 

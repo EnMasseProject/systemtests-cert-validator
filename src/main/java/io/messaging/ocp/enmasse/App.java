@@ -45,7 +45,7 @@ public class App {
         });
         int port = 8080;
         httpServer.listen(port);
-        logger.info("OCP enmasse app listening on port: {}", port);
+        logger.info("systemtests-cert-validator app listening on port: {}", port);
     }
     
     private void getHandler(HttpServerRequest request) {

@@ -5,8 +5,8 @@ items:
   kind: Service
   metadata:
     labels:
-      app: ocp-enmasse-app
-    name: ocp-enmasse-app
+      app: systemtests-cert-validator
+    name: systemtests-cert-validator
     namespace: enmasse-infra
   spec:
     ports:    
@@ -15,42 +15,42 @@ items:
       targetPort: 8080
       name: http
     selector:
-      app: ocp-enmasse-app
-      deploymentconfig: ocp-enmasse-app
+      app: systemtests-cert-validator
+      deploymentconfig: systemtests-cert-validator
     type: LoadBalancer
 - apiVersion: route.openshift.io/v1
   kind: Route
   metadata:
     labels:
-      app: ocp-enmasse-app
-    name: ocp-enmasse-app
+      app: systemtests-cert-validator
+    name: systemtests-cert-validator
     namespace: enmasse-infra
   spec:
     to:
       kind: Service
-      name: ocp-enmasse-app
+      name: systemtests-cert-validator
       weight: 100
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
     labels:
-      app: ocp-enmasse-app
-    name: ocp-enmasse-app
+      app: systemtests-cert-validator
+    name: systemtests-cert-validator
     namespace: enmasse-infra
   spec:
     replicas: 1
     selector:
       matchLabels:
-        app: ocp-enmasse-app
-        deploymentconfig: ocp-enmasse-app
+        app: systemtests-cert-validator
+        deploymentconfig: systemtests-cert-validator
     template:
       metadata:
         labels:
-          app: ocp-enmasse-app
-          deploymentconfig: ocp-enmasse-app
+          app: systemtests-cert-validator
+          deploymentconfig: systemtests-cert-validator
       spec:
         containers:
-        - image: famargon/ocp-enmasse-app
+        - image: enmasse/systemtests-cert-validator
           imagePullPolicy: Always
-          name: ocp-enmasse-app
+          name: systemtests-cert-validator
         terminationGracePeriodSeconds: 30
