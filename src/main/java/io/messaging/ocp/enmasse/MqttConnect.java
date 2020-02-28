@@ -40,70 +40,70 @@ import io.vertx.core.json.JsonObject;
 public class MqttConnect {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-	
-	public Future<Void> testConnection(Vertx vertx, JsonObject opts, File caCert) {
 
-		Future<Void> resultPromise = Future.future();
-		logger.info("mqtt creating");
-		MqttConnectOptions mqttOptions = new MqttConnectOptions();
-		try {
-			mqttOptions.setSocketFactory(new SNISettingSSLSocketFactory(getSocketFactory(new FileInputStream(caCert)), opts.getString("mqttHost")));
-		} catch (Exception e) {
-			logger.error("mqtt failed creating socket factory", e);
-			resultPromise.fail(e);
-		}
-		mqttOptions.setUserName(opts.getString("username"));
-		mqttOptions.setPassword(opts.getString("password").toCharArray());
-		mqttOptions.setConnectionTimeout(15);
-		
+    public Future<Void> testConnection(Vertx vertx, JsonObject opts, File caCert) {
+
+        Future<Void> resultPromise = Future.future();
+        logger.info("mqtt creating");
+        MqttConnectOptions mqttOptions = new MqttConnectOptions();
+        try {
+            mqttOptions.setSocketFactory(new SNISettingSSLSocketFactory(getSocketFactory(new FileInputStream(caCert)), opts.getString("mqttHost")));
+        } catch (Exception e) {
+            logger.error("mqtt failed creating socket factory", e);
+            resultPromise.fail(e);
+        }
+        mqttOptions.setUserName(opts.getString("username"));
+        mqttOptions.setPassword(opts.getString("password").toCharArray());
+        mqttOptions.setConnectionTimeout(15);
+
         String serverURI = String.format("ssl://%s:%s", opts.getString("mqttHost"), opts.getString("mqttPort"));
-		
-		vertx.executeBlocking(f->{
-			try {
-				logger.info("mqtt connecting");
-				IMqttClient mqttClient = new MqttClient(serverURI, UUID.randomUUID().toString(), new MemoryPersistence());
-				mqttClient.connect(mqttOptions);
-				logger.info("mqtt succeeded");
-				f.complete();
-			} catch (MqttException e) {
-				logger.error("mqtt failed connecting", e);
-				f.fail(e);
-			}
-		}, ar->{
-			if(ar.succeeded()) {
-				logger.info("mqtt returning success");
-				resultPromise.complete();
-			}else {
-				resultPromise.fail(ar.cause());
-			}
-		});
-		
+
+        vertx.executeBlocking(f -> {
+            try {
+                logger.info("mqtt connecting");
+                IMqttClient mqttClient = new MqttClient(serverURI, UUID.randomUUID().toString(), new MemoryPersistence());
+                mqttClient.connect(mqttOptions);
+                logger.info("mqtt succeeded");
+                f.complete();
+            } catch (MqttException e) {
+                logger.error("mqtt failed connecting", e);
+                f.fail(e);
+            }
+        }, ar -> {
+            if (ar.succeeded()) {
+                logger.info("mqtt returning success");
+                resultPromise.complete();
+            } else {
+                resultPromise.fail(ar.cause());
+            }
+        });
+
         return resultPromise;
-	}
+    }
 
     private SSLSocketFactory getSocketFactory(InputStream caCrtFile) throws Exception {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
 
         KeyStore caKs = KeyStore.getInstance(KeyStore.getDefaultType());
         caKs.load(null, null);
-        
+
         Collection<? extends Certificate> certs = cf.generateCertificates(caCrtFile);
-        
+
         int count = 1;
-        for(Certificate cert : certs) {
-        	caKs.setCertificateEntry("cert"+count, cert);
-        	count++;
+        for (Certificate cert : certs) {
+            caKs.setCertificateEntry("cert" + count, cert);
+            count++;
         }
-        
+
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
         tmf.init(caKs);
-        
+
         SSLContext context = tryGetSSLContext("TLSv1.2", "TLSv1.1", "TLS", "TLSv1");
         context.init(null, tmf.getTrustManagers(), new SecureRandom());
 
         return context.getSocketFactory();
     }
-    
+
     private SSLContext tryGetSSLContext(final String... protocols) throws NoSuchAlgorithmException {
         for (String protocol : protocols) {
             try {
@@ -115,7 +115,7 @@ public class MqttConnect {
         throw new NoSuchAlgorithmException(String.format("Could not create SSLContext with one of the requested protocols: %s",
                 Arrays.toString(protocols)));
     }
-	
+
     private static class SNISettingSSLSocketFactory extends SSLSocketFactory {
         private final SSLSocketFactory socketFactory;
 
