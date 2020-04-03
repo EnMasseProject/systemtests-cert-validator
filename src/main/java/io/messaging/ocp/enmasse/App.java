@@ -53,11 +53,8 @@ public class App {
             logger.info("Incoming GET request: {}", json);
 
             Future<Void> messagingResult = new MessagingConnect().testConnection(vertx, json, caCert);
-            Future<Void> mqttResult = new MqttConnect().testConnection(vertx, json, caCert);
 
-            CompositeFuture allResults = CompositeFuture.all(messagingResult, mqttResult);
-
-            allResults.setHandler(ar -> {
+            messagingResult.setHandler(ar -> {
                 JsonObject responseData = new JsonObject();
                 if (ar.succeeded()) {
                     responseData.put("ok", true);
